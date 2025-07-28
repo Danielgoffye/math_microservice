@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Istoric Calcule</title>
+  <style>
+    body {
+      background-color: #eef1f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 900px;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      background-color: #007bff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
+
+  <script>
+    async function loadHistory() {
+      const logged = localStorage.getItem("loggedUser");
+      const userId = localStorage.getItem("userId");
+
+      if (!logged || !userId) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const response = await fetch(`/api/history?user_id=${userId}`);
+      const data = await response.json();
+      const tableBody = document.getElementById("logTable");
+
+      tableBody.innerHTML = "";
+      data.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${entry.operation}</td>
+          <td>${entry.parameters}</td>
+          <td>${entry.result}</td>
+          <td>${entry.timestamp}</td>
+          <td>${entry.is_cached ? "✔️" : "✖️"}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function logoutUser() {
+      localStorage.removeItem("loggedUser");
+      localStorage.removeItem("userId");
+      location.href = "/login";
+    }
+
+    window.onload = loadHistory;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar">
+      <a href="/">Acasă</a>
+      <a href="#" onclick="logoutUser()">Logout</a>
+    </nav>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Operație</th>
+          <th>Parametri</th>
+          <th>Rezultat</th>
+          <th>Timp</th>
+          <th>Cache</th>
+        </tr>
+      </thead>
+      <tbody id="logTable">
+        <!-- rânduri generate din JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
+
+    <button id="exportBtn" onclick="exportHistory()" style="margin-top: 1.5rem; background-color: #007bff; color: white; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer;">Exportă istoric JSON</button>
+    <script>
+      function exportHistory() {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          alert("Trebuie să fii autentificat!");
+          return;
+        }
+        window.location.href = `/api/export?user_id=${userId}`;
+      }
+    </script>

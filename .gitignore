@@ -1,0 +1,16 @@
+# foldere locale
+venv/
+__pycache__/
+.vscode/
+
+# fișiere temporare sau cache
+*.pyc
+*.log
+*.pid
+
+# baze de date locale
+*.sqlite3
+*.db
+
+# altele
+.env

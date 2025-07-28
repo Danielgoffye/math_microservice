@@ -1,0 +1,10 @@
+{
+  "total_requests": 11,
+  "cache_hits": 4,
+  "cache_hit_rate": "36.36%",
+  "operations": {
+    "factorial": 2,
+    "fibonacci": 2,
+    "pow": 7
+  }
+}

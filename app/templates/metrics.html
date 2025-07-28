@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistici Microserviciu</title>
+  <style>
+    body {
+      background-color: #eef1f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 600px;
+      text-align: center;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      background-color: #007bff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+    }
+
+    .stat-box {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+
+  <script>
+    async function loadMetrics() {
+      const response = await fetch("/api/metrics");
+      const data = await response.json();
+
+      document.getElementById("totalRequests").innerText = data.total_requests;
+      document.getElementById("cacheHits").innerText = data.cache_hits;
+      document.getElementById("cacheRate").innerText = data.cache_hit_rate;
+
+      const opList = document.getElementById("operationList");
+      opList.innerHTML = "";
+      for (const [op, count] of Object.entries(data.operations)) {
+        const item = document.createElement("li");
+        item.textContent = `${op}: ${count}`;
+        opList.appendChild(item);
+      }
+    }
+
+    function logoutUser() {
+      localStorage.clear();
+      window.location.href = "/login";
+    }
+
+    window.onload = loadMetrics;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar">
+      <a href="/">Acasă</a>
+      <a href="/history">Istoric</a>
+      <a href="#" onclick="logoutUser()">Logout</a>
+    </nav>
+
+    <h2>Statistici Microserviciu</h2>
+    <div class="stat-box">Total cereri: <strong id="totalRequests">0</strong></div>
+    <div class="stat-box">Cache hits: <strong id="cacheHits">0</strong></div>
+    <div class="stat-box">Rată de cache: <strong id="cacheRate">0%</strong></div>
+    <h3>Distribuție pe operații:</h3>
+    <ul id="operationList"></ul>
+  </div>
+</body>
+</html>

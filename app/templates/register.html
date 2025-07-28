@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Înregistrare</title>
+  <style>
+    body {
+      background-color: #eef1f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 420px;
+      text-align: center;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      background-color: #007bff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    h2 {
+      margin-bottom: 2rem;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1.2rem;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #message {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+  </style>
+
+  <script>
+    async function registerUser(event) {
+      event.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const msg = document.getElementById("message");
+
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        data.detail = "Eroare necunoscută.";
+      }
+
+      if (response.ok) {
+        msg.innerText = "Cont creat cu succes!";
+        msg.style.color = "green";
+      } else if (response.status === 422) {
+        msg.innerText = "Parola trebuie să aibă cel puțin 6 caractere.";
+        msg.style.color = "red";
+      } else {
+        msg.innerText = "Eroare: " + (data.detail || "Eroare necunoscută.");
+        msg.style.color = "red";
+      }
+
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+    }
+
+    function logoutUser() {
+      localStorage.removeItem("loggedUser");
+      location.href = "/";
+    }
+
+    window.onload = function () {
+      const logoutLink = document.getElementById("logoutNav");
+      const user = localStorage.getItem("loggedUser");
+      if (logoutLink) logoutLink.style.display = user ? "inline-block" : "none";
+    };
+  </script>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar">
+      <a href="/login">Login</a>
+    </nav>
+
+
+    <h2>Înregistrează-te</h2>
+
+    <form onsubmit="registerUser(event)">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Parolă" required>
+      <button type="submit">Creează cont</button>
+    </form>
+
+    <div id="message"></div>
+  </div>
+</body>
+</html>
