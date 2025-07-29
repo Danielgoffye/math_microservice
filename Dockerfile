@@ -1,5 +1,5 @@
-# Imagine de bază oficială cu Python 3.12
-FROM python:3.12-slim
+# Imagine de bază oficială cu Python 3.10 (compatibil cu FastAPI 0.95.2 și Pydantic 1.x)
+FROM python:3.10-slim
 
 # Setăm directorul de lucru din interiorul containerului
 WORKDIR /app

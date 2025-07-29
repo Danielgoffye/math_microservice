@@ -184,65 +184,72 @@
       });
     }
 
-    async function calculate() {
-      const op = document.getElementById("currentOperation").value;
-      let payload = {};
-      let url = `/api/${op}`;
-      let error = "";
+  async function calculate() {
+    const op = document.getElementById("currentOperation").value;
+    let payload = {};
+    let url = `/api/${op}`;
+    let error = "";
 
-      const userId = parseInt(localStorage.getItem("userId"));
-
-      if (op === "pow") {
-        const base = parseInt(document.getElementById("base").value);
-        const exponent = parseInt(document.getElementById("exponent").value);
-        if (isNaN(base) || isNaN(exponent)) {
-          error = "Introdu un număr valid pentru putere.";
-        } else {
-          payload = { base, exponent, user_id: userId };
-        }
-      } else if (op === "factorial") {
-        const number = parseInt(document.getElementById("number").value);
-        if (isNaN(number) || number < 0) {
-          error = "Factorialul necesită un număr ≥ 0.";
-        } else {
-          payload = { number, user_id: userId };
-        }
-      } else if (op === "fibonacci") {
-        const n = parseInt(document.getElementById("n").value);
-        if (isNaN(n) || n < 0) {
-          error = "Fibonacci necesită un număr ≥ 0.";
-        } else {
-          payload = { n, user_id: userId };
-        }
-      }
-
-      if (error) {
-        document.getElementById("result").innerText = error;
-        resetInputs();
-        return;
-      }
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        document.getElementById("result").innerText = "Rezultat: " + data.result;
-      } else {
-        document.getElementById("result").innerText = "Eroare: " + data.detail;
-      }
-
-      resetInputs();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Trebuie să fii autentificat.");
+      window.location.href = "/login";
+      return;
     }
+
+    if (op === "pow") {
+      const base = parseInt(document.getElementById("base").value);
+      const exponent = parseInt(document.getElementById("exponent").value);
+      if (isNaN(base) || isNaN(exponent)) {
+        error = "Introdu un număr valid pentru putere.";
+      } else {
+        payload = { base, exponent };
+      }
+    } else if (op === "factorial") {
+      const number = parseInt(document.getElementById("number").value);
+      if (isNaN(number) || number < 0) {
+        error = "Factorialul necesită un număr ≥ 0.";
+      } else {
+        payload = { number };
+      }
+    } else if (op === "fibonacci") {
+      const n = parseInt(document.getElementById("n").value);
+      if (isNaN(n) || n < 0) {
+        error = "Fibonacci necesită un număr ≥ 0.";
+      } else {
+        payload = { n };
+      }
+    }
+
+    if (error) {
+      document.getElementById("result").innerText = error;
+      resetInputs();
+      return;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`  // ✅ JWT aici
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      document.getElementById("result").innerText = "Rezultat: " + data.result;
+    } else {
+      document.getElementById("result").innerText = "Eroare: " + data.detail;
+    }
+
+    resetInputs();
+  }
+
 
     function logoutUser() {
       localStorage.removeItem("loggedUser");
-      localStorage.removeItem("userId");
+      localStorage.removeItem("token");
       location.href = "/login";
     }
 

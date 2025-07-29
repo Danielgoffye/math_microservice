@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 class PowerRequest(BaseModel):
     base: int = Field(..., description="The base number")
     exponent: int = Field(..., description="The exponent")
-    user_id: int
 
 
 class PowerResponse(BaseModel):
@@ -15,7 +14,6 @@ class PowerResponse(BaseModel):
 # Model pentru FACTORIAL
 class FactorialRequest(BaseModel):
     number: int = Field(..., ge=0, description="A non-negative number")
-    user_id: int
 
 
 class FactorialResponse(BaseModel):
@@ -25,7 +23,6 @@ class FactorialResponse(BaseModel):
 # Model pentru FIBONACCI
 class FibonacciRequest(BaseModel):
     n: int = Field(..., ge=0, description="Fibonacci index")
-    user_id: int
 
 
 class FibonacciResponse(BaseModel):

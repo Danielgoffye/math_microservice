@@ -1,7 +1,8 @@
 from app.db.session import engine
 from app.db.session import Base
 from app.models.request_log import RequestLog
-from app.models.user import User
+from app.models.user import User  # noqa: F401
+# asigură importul modelului User
 
 
 print("Model importat:", RequestLog.__tablename__)
