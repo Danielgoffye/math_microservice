@@ -1,5 +1,5 @@
-
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 from app.services import math_service
 from app.services.math_service import (
@@ -21,8 +21,12 @@ router = APIRouter()
 @router.post("/pow", response_model=operations.PowerResponse)
 def calculate_power(
     payload: operations.PowerRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
 ):
+    Authorize.jwt_required()
+    user_id = int(Authorize.get_jwt_subject())
+
     info_before = _cached_pow.cache_info()
     result = math_service.compute_pow(payload.base, payload.exponent)
     info_after = _cached_pow.cache_info()
@@ -34,7 +38,7 @@ def calculate_power(
             parameters=json.dumps(payload.dict()),
             result=str(result),
             is_cached=was_cached,
-            user_id=payload.user_id
+            user_id=user_id
         )
     )
     db.commit()
@@ -44,8 +48,12 @@ def calculate_power(
 @router.post("/factorial", response_model=operations.FactorialResponse)
 def calculate_factorial(
     payload: operations.FactorialRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
 ):
+    Authorize.jwt_required()
+    user_id = int(Authorize.get_jwt_subject())
+
     try:
         info_before = _cached_factorial.cache_info()
         result = math_service.compute_factorial(payload.number)
@@ -58,7 +66,7 @@ def calculate_factorial(
                 parameters=json.dumps(payload.dict()),
                 result=str(result),
                 is_cached=was_cached,
-                user_id=payload.user_id
+                user_id=user_id
             )
         )
         db.commit()
@@ -70,8 +78,12 @@ def calculate_factorial(
 @router.post("/fibonacci", response_model=operations.FibonacciResponse)
 def calculate_fibonacci(
     payload: operations.FibonacciRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
 ):
+    Authorize.jwt_required()
+    user_id = int(Authorize.get_jwt_subject())
+
     try:
         info_before = _cached_fibonacci.cache_info()
         result = math_service.compute_fibonacci(payload.n)
@@ -84,7 +96,7 @@ def calculate_fibonacci(
                 parameters=json.dumps(payload.dict()),
                 result=str(result),
                 is_cached=was_cached,
-                user_id=payload.user_id
+                user_id=user_id
             )
         )
         db.commit()
@@ -94,18 +106,15 @@ def calculate_fibonacci(
 
 
 @router.get("/history")
-def get_history(request: Request, db: Session = Depends(get_db)):
-    user_id = request.query_params.get("user_id")
-
-    print("Received user_id:", user_id)  # Debugging statement
-
-    if not user_id or not user_id.isdigit():
-        raise HTTPException(
-            status_code=400, detail="Invalid or missing User ID."
-        )
+def get_history(
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
+):
+    Authorize.jwt_required()
+    user_id = int(Authorize.get_jwt_subject())
 
     logs = db.query(RequestLog)\
-             .filter(RequestLog.user_id == int(user_id))\
+             .filter(RequestLog.user_id == user_id)\
              .order_by(RequestLog.timestamp.desc())\
              .all()
 
@@ -119,13 +128,16 @@ def get_history(request: Request, db: Session = Depends(get_db)):
             "is_cached": log.is_cached
         })
 
-    print("Logs found:", len(logs))
-    print("user_id type:", type(user_id))
     return response
 
 
 @router.get("/metrics")
-def get_metrics(db: Session = Depends(get_db)):
+def get_metrics(
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
+):
+    Authorize.jwt_required()
+
     total = db.query(RequestLog).count()
     from_cache = db.query(RequestLog).filter(RequestLog.is_cached == 1).count()
     by_operation = db.query(RequestLog.operation, func.count())\

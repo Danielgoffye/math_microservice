@@ -101,8 +101,9 @@
       }
 
       if (response.ok) {
-        localStorage.setItem("loggedUser", username);
-        localStorage.setItem("userId", data.user_id);
+        // 🔐 Salvăm JWT în localStorage
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("loggedUser", data.username);  // pentru UI doar
         window.location.href = "/";
       } else {
         msg.innerText = "Eroare: " + (data.detail || "Autentificare eșuată.");
@@ -115,6 +116,7 @@
 
     function logoutUser() {
       localStorage.removeItem("loggedUser");
+      localStorage.removeItem("token");
       location.href = "/login";
     }
 

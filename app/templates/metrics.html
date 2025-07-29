@@ -63,7 +63,22 @@
 
   <script>
     async function loadMetrics() {
-      const response = await fetch("/api/metrics");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Trebuie să fii autentificat pentru a vedea metricile.");
+        window.location.href = "/login";
+        return;
+      }
+      const response = await fetch("/api/metrics", {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+      if (!response.ok) {
+        alert("Eroare la încărcarea metricilor. Reloghează-te.");
+        window.location.href = "/login";
+        return;
+      }
       const data = await response.json();
 
       document.getElementById("totalRequests").innerText = data.total_requests;
@@ -81,6 +96,7 @@
 
     function logoutUser() {
       localStorage.clear();
+      localStorage.removeItem("token");
       window.location.href = "/login";
     }
 

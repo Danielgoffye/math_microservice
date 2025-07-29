@@ -16,6 +16,8 @@ from app.api import auth
 
 from app.api import ui
 
+from app.core import config  # noqa: F401 - asigură importul înainte de AuthJWT
+
 
 # Setăm directorul unde se află fișierele HTML (șabloanele)
 BASE_DIR = Path(
