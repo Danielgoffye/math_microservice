@@ -2,11 +2,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 from app.services import math_service
-from app.services.math_service import (
-    _cached_fibonacci,
-    _cached_factorial,
-    _cached_pow
-)
 from app.schemas import operations
 from app.db.deps import get_db
 from app.models.request_log import RequestLog
@@ -16,6 +11,8 @@ from pathlib import Path
 
 
 router = APIRouter()
+
+# ------------------ /pow ------------------
 
 
 @router.post("/pow", response_model=operations.PowerResponse)
@@ -27,22 +24,21 @@ def calculate_power(
     Authorize.jwt_required()
     user_id = int(Authorize.get_jwt_subject())
 
-    info_before = _cached_pow.cache_info()
-    result = math_service.compute_pow(payload.base, payload.exponent)
-    info_after = _cached_pow.cache_info()
-    was_cached = int(info_before.hits < info_after.hits)
-
-    db.add(
-        RequestLog(
-            operation="pow",
-            parameters=json.dumps(payload.dict()),
-            result=str(result),
-            is_cached=was_cached,
-            user_id=user_id
-        )
+    result, was_cached = math_service.compute_pow(
+        payload.base, payload.exponent
     )
+
+    db.add(RequestLog(
+        operation="pow",
+        parameters=json.dumps(payload.dict()),
+        result=str(result),
+        is_cached=was_cached,
+        user_id=user_id
+    ))
     db.commit()
     return {"result": result}
+
+# ------------------ /factorial ------------------
 
 
 @router.post("/factorial", response_model=operations.FactorialResponse)
@@ -55,24 +51,21 @@ def calculate_factorial(
     user_id = int(Authorize.get_jwt_subject())
 
     try:
-        info_before = _cached_factorial.cache_info()
-        result = math_service.compute_factorial(payload.number)
-        info_after = _cached_factorial.cache_info()
-        was_cached = int(info_before.hits < info_after.hits)
+        result, was_cached = math_service.compute_factorial(payload.number)
 
-        db.add(
-            RequestLog(
-                operation="factorial",
-                parameters=json.dumps(payload.dict()),
-                result=str(result),
-                is_cached=was_cached,
-                user_id=user_id
-            )
-        )
+        db.add(RequestLog(
+            operation="factorial",
+            parameters=json.dumps(payload.dict()),
+            result=str(result),
+            is_cached=was_cached,
+            user_id=user_id
+        ))
         db.commit()
         return {"result": result}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# ------------------ /fibonacci ------------------
 
 
 @router.post("/fibonacci", response_model=operations.FibonacciResponse)
@@ -85,24 +78,21 @@ def calculate_fibonacci(
     user_id = int(Authorize.get_jwt_subject())
 
     try:
-        info_before = _cached_fibonacci.cache_info()
-        result = math_service.compute_fibonacci(payload.n)
-        info_after = _cached_fibonacci.cache_info()
-        was_cached = int(info_before.hits < info_after.hits)
+        result, was_cached = math_service.compute_fibonacci(payload.n)
 
-        db.add(
-            RequestLog(
-                operation="fibonacci",
-                parameters=json.dumps(payload.dict()),
-                result=str(result),
-                is_cached=was_cached,
-                user_id=user_id
-            )
-        )
+        db.add(RequestLog(
+            operation="fibonacci",
+            parameters=json.dumps(payload.dict()),
+            result=str(result),
+            is_cached=was_cached,
+            user_id=user_id
+        ))
         db.commit()
         return {"result": result}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# ------------------ /history ------------------
 
 
 @router.get("/history")
@@ -118,17 +108,18 @@ def get_history(
              .order_by(RequestLog.timestamp.desc())\
              .all()
 
-    response = []
-    for log in logs:
-        response.append({
+    return [
+        {
             "operation": log.operation,
             "parameters": log.parameters,
             "result": log.result,
             "timestamp": log.timestamp.strftime("%Y-%m-%d %H:%M"),
             "is_cached": log.is_cached
-        })
+        }
+        for log in logs
+    ]
 
-    return response
+# ------------------ /metrics ------------------
 
 
 @router.get("/metrics")
