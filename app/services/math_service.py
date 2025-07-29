@@ -1,23 +1,34 @@
-# app/services/math_service.py
-from functools import lru_cache
+import redis
+import os
+
+# Citim hostul din variabilă de mediu (setată în docker-compose.yml)
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=6379,
+    db=0,
+    decode_responses=True
+)
+
+# -------------------- POW --------------------
 
 
 def _pow_logic(base: int, exponent: int) -> int:
     return base ** exponent
 
 
-@lru_cache(maxsize=1000)
-def _cached_pow(base: int, exponent: int) -> int:
-    return _pow_logic(base, exponent)
+def compute_pow(base: int, exponent: int) -> tuple[int, int]:
+    key = f"pow:{base}:{exponent}"
+    cached = redis_client.get(key)
+    if cached is not None:
+        print(f"[REDIS CACHE HIT] pow({base}, {exponent})")
+        return int(cached), 1  # result, was_cached
 
+    result = _pow_logic(base, exponent)
+    redis_client.set(key, result)
+    return result, 0
 
-def compute_pow(base: int, exponent: int) -> int:
-    info_before = _cached_pow.cache_info()
-    result = _cached_pow(base, exponent)
-    info_after = _cached_pow.cache_info()
-    if info_before.hits < info_after.hits:
-        print(f"[CACHE HIT] pow({base}, {exponent})")
-    return result
+# -------------------- FACTORIAL --------------------
 
 
 def _factorial_logic(n: int) -> int:
@@ -29,18 +40,18 @@ def _factorial_logic(n: int) -> int:
     return result
 
 
-@lru_cache(maxsize=1000)
-def _cached_factorial(n: int) -> int:
-    return _factorial_logic(n)
+def compute_factorial(n: int) -> tuple[int, int]:
+    key = f"fact:{n}"
+    cached = redis_client.get(key)
+    if cached is not None:
+        print(f"[REDIS CACHE HIT] factorial({n})")
+        return int(cached), 1
 
+    result = _factorial_logic(n)
+    redis_client.set(key, result)
+    return result, 0
 
-def compute_factorial(n: int) -> int:
-    info_before = _cached_factorial.cache_info()
-    result = _cached_factorial(n)
-    info_after = _cached_factorial.cache_info()
-    if info_before.hits < info_after.hits:
-        print(f"[CACHE HIT] factorial({n})")
-    return result
+# -------------------- FIBONACCI --------------------
 
 
 def _fibonacci_logic(n: int) -> int:
@@ -56,15 +67,13 @@ def _fibonacci_logic(n: int) -> int:
     return b
 
 
-@lru_cache(maxsize=1000)
-def _cached_fibonacci(n: int) -> int:
-    return _fibonacci_logic(n)
+def compute_fibonacci(n: int) -> tuple[int, int]:
+    key = f"fib:{n}"
+    cached = redis_client.get(key)
+    if cached is not None:
+        print(f"[REDIS CACHE HIT] fibonacci({n})")
+        return int(cached), 1
 
-
-def compute_fibonacci(n: int) -> int:
-    info_before = _cached_fibonacci.cache_info()
-    result = _cached_fibonacci(n)
-    info_after = _cached_fibonacci.cache_info()
-    if info_before.hits < info_after.hits:
-        print(f"[CACHE HIT] fibonacci({n})")
-    return result
+    result = _fibonacci_logic(n)
+    redis_client.set(key, result)
+    return result, 0
