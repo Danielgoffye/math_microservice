@@ -1,9 +1,9 @@
 {
-  "total_requests": 20,
+  "total_requests": 21,
   "cache_hits": 10,
-  "cache_hit_rate": "50.00%",
+  "cache_hit_rate": "47.62%",
   "operations": {
-    "factorial": 4,
+    "factorial": 5,
     "fibonacci": 4,
     "pow": 12
   }
