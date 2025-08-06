@@ -14,7 +14,7 @@
     }
 
     .container {
-      background-color: white;
+      background-color: #8ec3ead0;
       padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -24,21 +24,27 @@
 
     .navbar {
       display: flex;
-      justify-content: center;
-      gap: 1.5rem;
+      justify-content: space-between;
+      align-items: center;
       background-color: #007bff;
       padding: 1rem;
       border-radius: 10px;
       margin-bottom: 1.5rem;
     }
 
-    .navbar a {
+    .navbar a,
+    .navbar button {
       color: white;
-      text-decoration: none;
+      background: none;
+      border: none;
       font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
     }
 
-    .navbar a:hover {
+    .navbar a:hover,
+    .navbar button:hover {
       text-decoration: underline;
     }
 
@@ -99,12 +105,14 @@
       });
     }
 
-    function logoutUser() {
-      localStorage.removeItem("loggedUser");
-      localStorage.removeItem("token");
-      location.href = "/login";
+    function exportHistory() {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        alert("Trebuie să fii autentificat!");
+        return;
+      }
+      window.location.href = `/api/export?user_id=${userId}`;
     }
-
 
     window.onload = loadHistory;
   </script>
@@ -113,8 +121,10 @@
   <div class="container">
     <nav class="navbar">
       <a href="/">Acasă</a>
-      <a href="#" onclick="logoutUser()">Logout</a>
+      <button onclick="exportHistory()">Exportă JSON</button>
     </nav>
+
+    <h2>Istoric Calcule</h2>
 
     <table>
       <thead>
@@ -133,15 +143,3 @@
   </div>
 </body>
 </html>
-
-    <button id="exportBtn" onclick="exportHistory()" style="margin-top: 1.5rem; background-color: #007bff; color: white; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer;">Exportă istoric JSON</button>
-    <script>
-      function exportHistory() {
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
-          alert("Trebuie să fii autentificat!");
-          return;
-        }
-        window.location.href = `/api/export?user_id=${userId}`;
-      }
-    </script>

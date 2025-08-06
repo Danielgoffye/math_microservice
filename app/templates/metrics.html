@@ -14,7 +14,7 @@
     }
 
     .container {
-      background-color: white;
+      background-color: #8ec3ead0;
       padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -25,7 +25,6 @@
     .navbar {
       display: flex;
       justify-content: center;
-      gap: 1.5rem;
       background-color: #007bff;
       padding: 1rem;
       border-radius: 10px;
@@ -36,6 +35,7 @@
       color: white;
       text-decoration: none;
       font-weight: bold;
+      font-size: 1rem;
     }
 
     .navbar a:hover {
@@ -69,16 +69,19 @@
         window.location.href = "/login";
         return;
       }
+
       const response = await fetch("/api/metrics", {
         headers: {
           "Authorization": "Bearer " + token
         }
       });
+
       if (!response.ok) {
         alert("Eroare la încărcarea metricilor. Reloghează-te.");
         window.location.href = "/login";
         return;
       }
+
       const data = await response.json();
 
       document.getElementById("totalRequests").innerText = data.total_requests;
@@ -94,12 +97,6 @@
       }
     }
 
-    function logoutUser() {
-      localStorage.clear();
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-
     window.onload = loadMetrics;
   </script>
 </head>
@@ -107,8 +104,6 @@
   <div class="container">
     <nav class="navbar">
       <a href="/">Acasă</a>
-      <a href="/history">Istoric</a>
-      <a href="#" onclick="logoutUser()">Logout</a>
     </nav>
 
     <h2>Statistici Microserviciu</h2>
