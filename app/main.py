@@ -1,13 +1,13 @@
-# Importăm clasele și funcțiile de care avem nevoie
+
 from fastapi import (
     FastAPI,
-    Request  # FastAPI este framework-ul; Request e folosit pentru acces
-)  # la datele din cerere HTTP
+    Request  
+)  
 from fastapi.templating import (
-    Jinja2Templates  # Clasa care știe să proceseze șabloane HTML (cu Jinja2)
+    Jinja2Templates  
 )
 from pathlib import (
-    Path  # Pentru a construi căi de directoare compatibile cu orice OS
+    Path  
 )
 
 from app.api import endpoints
@@ -19,10 +19,9 @@ from app.api import ui
 from app.core import config  # noqa: F401 - asigură importul înainte de AuthJWT
 
 
-# Setăm directorul unde se află fișierele HTML (șabloanele)
 BASE_DIR = Path(
     __file__
-).resolve().parent  # `main.py` e în `app/`, deci `parent` e `app/`
+).resolve().parent  # Obținem directorul curent al fișierului `main.py`
 templates = Jinja2Templates(
     directory=str(
         BASE_DIR / "templates"  # Construim path-ul către `app/templates/`
@@ -34,11 +33,11 @@ app = FastAPI(title="Math Microservice")
 
 
 async def read_root(
-    request: Request  # FastAPI cere să treci explicit
+    request: Request  
 ):
     return templates.TemplateResponse(
         "index.html", {
-            "request": request  # Trimite pagina HTML cu contextul (request)
+            "request": request  # Trimite pagina HTML cu contextul
         }
     )
 
