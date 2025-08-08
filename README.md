@@ -38,6 +38,7 @@ Un microserviciu REST complet pentru efectuarea de operații matematice de bază
 ##  Cum rulezi local (fără Docker)
 
 ```bash
+
 python -m venv venv
 
 venv\Scripts\activate   # Windows
@@ -49,9 +50,9 @@ uvicorn app.main:app --reload
 Aplicația va fi accesibilă la: http://localhost:8000
 
 
----
+## Cum rulezi cu Docker
 
-##  Cum rulezi cu Docker
+```bash
 
 docker-compose build
 
